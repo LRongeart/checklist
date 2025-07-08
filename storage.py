@@ -1,8 +1,16 @@
 import os
 import json
 
+
+import sys
+def get_base_path():
+    # Use the folder of the .exe if frozen, else the script directory
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
 def get_data_path():
-    return os.path.join(os.path.dirname(__file__), 'projects.json')
+    return os.path.join(get_base_path(), 'projects.json')
 
 def load_projects():
     path = get_data_path()

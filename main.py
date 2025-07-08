@@ -1,30 +1,44 @@
 
-import sys
-import random
-import string
-from PyQt5.QtWidgets import QStyledItemDelegate
-from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QTableWidget, QTableWidgetItem, QComboBox, QLineEdit, QLabel, QMessageBox,
-    QInputDialog, QListWidget, QListWidgetItem, QHeaderView, QMenu, QStyledItemDelegate
-)
-from PyQt5.QtCore import Qt, QTimer
-import storage
 
+
+# --- Robust import error handler and Qt plugin path debug ---
 try:
-    import colorama
-    colorama.init()
-    from colorama import Fore, Style
-except ImportError:
-    # fallback: define dummy Fore/Style
-    class Dummy:
-        RESET_ALL = ''
-    class DummyFore(Dummy):
-        GREEN = YELLOW = RED = CYAN = MAGENTA = GREY = ''
-    Fore = DummyFore()
-    Style = Dummy()
-
-import re
+    import sys
+    import os
+    print("[DEBUG] sys.executable:", sys.executable)
+    print("[DEBUG] __file__:", __file__)
+    qt_plugin_env = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH', None)
+    print("[DEBUG] QT_QPA_PLATFORM_PLUGIN_PATH:", qt_plugin_env)
+    # Try to guess the plugin path relative to the exe or script
+    exe_dir = os.path.dirname(sys.executable)
+    plugin_guess = os.path.join(exe_dir, 'PyQt5', 'Qt', 'plugins', 'platforms')
+    print("[DEBUG] Expected plugin dir:", plugin_guess)
+    import random
+    import string
+    from PyQt5.QtWidgets import (
+        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+        QTableWidget, QTableWidgetItem, QComboBox, QLineEdit, QLabel, QMessageBox,
+        QInputDialog, QListWidget, QListWidgetItem, QHeaderView, QMenu, QStyledItemDelegate
+    )
+    from PyQt5.QtCore import Qt, QTimer
+    import re
+    try:
+        import colorama
+        colorama.init()
+        from colorama import Fore, Style
+    except ImportError:
+        # fallback: define dummy Fore/Style
+        class Dummy:
+            RESET_ALL = ''
+        class DummyFore(Dummy):
+            GREEN = YELLOW = RED = CYAN = MAGENTA = GREY = ''
+        Fore = DummyFore()
+        Style = Dummy()
+except Exception as e:
+    import traceback
+    print("\nFATAL IMPORT ERROR:\n" + traceback.format_exc(), file=sys.stderr)
+    input("\nPress Enter to exit...")
+    sys.exit(1)
 
 def cprint(*args, **kwargs):
     text = ' '.join(str(a) for a in args)
@@ -139,7 +153,7 @@ class ChecklistApp(QMainWindow):
         # Set window icon (top left)
         import os
         from PyQt5.QtGui import QIcon
-        icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'checklist_icon.png')
+        icon_path = os.path.join(self.get_base_path(), 'icons', 'checklist_icon.png')
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         self.resize(1600, 850)
@@ -148,7 +162,7 @@ class ChecklistApp(QMainWindow):
 
     def load_all_projects(self):
         import os, json
-        projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+        projects_dir = os.path.join(self.get_base_path(), 'projects')
         projects = []
         cprint(f"[DEBUG] Looking for projects in: {projects_dir}")
         if os.path.exists(projects_dir):
@@ -184,7 +198,7 @@ class ChecklistApp(QMainWindow):
         self.theme_combo = QComboBox()
         self.themes = {}
         self.last_theme = None
-        self._themes_path = os.path.join(os.path.dirname(__file__), 'themes.json')
+        self._themes_path = os.path.join(self.get_base_path(), 'themes.json')
         if os.path.exists(self._themes_path):
             try:
                 with open(self._themes_path, 'r', encoding='utf-8') as f:
@@ -294,6 +308,12 @@ class ChecklistApp(QMainWindow):
 
         # --- Apply theme after all widgets are created ---
         self.apply_theme()
+
+    def get_base_path(self):
+        import sys, os
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.dirname(sys.executable)
+        return os.path.dirname(os.path.abspath(__file__))
 
     def open_custom_theme_dialog(self):
         import os, json
@@ -485,7 +505,7 @@ class ChecklistApp(QMainWindow):
         import os, json
         import datetime
         # Always reload project metadata from disk
-        projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+        projects_dir = os.path.join(self.get_base_path(), 'projects')
         project_path = os.path.join(projects_dir, f"{project_id}.json")
         if os.path.exists(project_path):
             try:
@@ -495,7 +515,7 @@ class ChecklistApp(QMainWindow):
                 self.project_label.setText(f"Project: {proj['name']}")
                 self.task_list.setRowCount(0)
                 # Load tasks from tasks/<project_id>/
-                tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+                tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
                 tasks = []
                 if os.path.exists(tasks_dir):
                     for fname in sorted(os.listdir(tasks_dir)):
@@ -558,7 +578,7 @@ class ChecklistApp(QMainWindow):
                 self.project_label.setText(f"Project: {self.current_project['name']}")
                 self.task_list.setRowCount(0)
                 # Load tasks from tasks/<project_name>/
-                tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_name)
+                tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_name)
                 tasks = []
                 if os.path.exists(tasks_dir):
                     for fname in sorted(os.listdir(tasks_dir)):
@@ -606,7 +626,7 @@ class ChecklistApp(QMainWindow):
                 self.project_label.setText(f"Project: {self.current_project['name']}")
                 self.task_list.setRowCount(0)
                 # Load tasks from tasks/<project_name>/
-                tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_name)
+                tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_name)
                 tasks = []
                 if os.path.exists(tasks_dir):
                     for fname in sorted(os.listdir(tasks_dir)):
@@ -643,7 +663,7 @@ class ChecklistApp(QMainWindow):
             self.add_task_row(task)
             # Save task as file
             project_id = self.current_project['id']
-            tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+            tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
             os.makedirs(tasks_dir, exist_ok=True)
             fpath = os.path.join(tasks_dir, f"{task_id}.json")
             with open(fpath, 'w', encoding='utf-8') as f:
@@ -802,7 +822,7 @@ class ChecklistApp(QMainWindow):
         self.task_list.removeRow(row)
         # Delete task file
         project_id = self.current_project['id']
-        tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+        tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
         fpath = os.path.join(tasks_dir, f"{task['id']}.json")
         if os.path.exists(fpath):
             os.remove(fpath)
@@ -827,7 +847,7 @@ class ChecklistApp(QMainWindow):
         task["status"] = status
         # Save updated status to file
         project_id = self.current_project['id']
-        tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+        tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
         fpath = os.path.join(tasks_dir, f"{task['id']}.json")
         with open(fpath, 'w', encoding='utf-8') as f:
             json.dump(task, f, indent=2, ensure_ascii=False)
@@ -865,7 +885,7 @@ class ChecklistApp(QMainWindow):
         from PyQt5.QtWidgets import QInputDialog
         import os, json
         # Ensure 'projects' folder exists
-        projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+        projects_dir = os.path.join(self.get_base_path(), 'projects')
         os.makedirs(projects_dir, exist_ok=True)
         # Ask for project name
         project_name, ok = QInputDialog.getText(self, "New Project", "Enter project name:")
@@ -882,7 +902,7 @@ class ChecklistApp(QMainWindow):
                 project_id = gen_id()
                 project_path = os.path.join(projects_dir, f"{project_id}.json")
             # Create tasks/<project_id>/ folder
-            tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+            tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
             os.makedirs(tasks_dir, exist_ok=True)
             # Add default 'Project Created' task
             import uuid
@@ -953,7 +973,7 @@ class ChecklistApp(QMainWindow):
         if proj and not proj.get('favourite', False):
             proj['favourite'] = True
             # Update project file
-            projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+            projects_dir = os.path.join(self.get_base_path(), 'projects')
             project_path = os.path.join(projects_dir, f"{project_id}.json")
             with open(project_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -968,7 +988,7 @@ class ChecklistApp(QMainWindow):
         if proj and proj.get('favourite', False):
             proj['favourite'] = False
             # Update project file
-            projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+            projects_dir = os.path.join(self.get_base_path(), 'projects')
             project_path = os.path.join(projects_dir, f"{project_id}.json")
             with open(project_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -1008,13 +1028,13 @@ class ChecklistApp(QMainWindow):
         self.projects = [p for p in self.projects if p['id'] != project_id]
         # Remove project file
         import time
-        projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
+        projects_dir = os.path.join(self.get_base_path(), 'projects')
         project_path = os.path.join(projects_dir, f"{project_id}.json")
         if os.path.exists(project_path):
             os.remove(project_path)
             cprint(f"[DEBUG] Deleted project file: {project_path}")
         # Remove tasks folder
-        tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+        tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
         if os.path.exists(tasks_dir):
             shutil.rmtree(tasks_dir)
             cprint(f"[DEBUG] Deleted tasks folder: {tasks_dir}")
@@ -1064,7 +1084,7 @@ class ChecklistApp(QMainWindow):
         tasks.sort(key=lambda t: t.get('text', '').lower())
         # Update order field and save
         project_id = self.current_project['id']
-        tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+        tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
         for idx, task in enumerate(tasks):
             task['order'] = idx
             fpath = os.path.join(tasks_dir, f"{task['id']}.json")
@@ -1077,7 +1097,12 @@ class ChecklistApp(QMainWindow):
 
 
 if __name__ == "__main__":
+    print("App started")
+    print("Before QApplication")
     app = QApplication(sys.argv)
+    print("After QApplication")
     win = ChecklistApp()
+    print("After ChecklistApp init")
     win.show()
+    print("After win.show()")
     sys.exit(app.exec_())

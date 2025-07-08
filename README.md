@@ -2,6 +2,9 @@
 
 This is a Python Qt-based standalone app for managing project-linked notes, to-do lists, and task logs. It allows you to create, edit, and save checklists for different projects locally.
 
+## Screenshot
+![image](https://github.com/user-attachments/assets/48535ef2-18c3-477a-bad6-1687e31ad001)
+
 ## Features
 - Create and manage projects
 - Add, edit, and delete tasks/notes for each project
@@ -9,21 +12,7 @@ This is a Python Qt-based standalone app for managing project-linked notes, to-d
 - Simple, user-friendly Qt interface
 
 ## Setup
-
-1. Ensure you have Python 3.8+ installed.
-2. (Recommended) Create a virtual environment:
-   ```powershell
-   python -m venv venv
-   .\venv\Scripts\Activate.ps1
-   ```
-3. Install dependencies:
-   ```powershell
-   pip install PyQt5
-   ```
-4. Run the app:
-   ```powershell
-   python main.py
-   ```
+1. Run the `checklist_app.exe`
 
 ## File Structure
 - `main.py` - Main application entry point
@@ -32,5 +21,3 @@ This is a Python Qt-based standalone app for managing project-linked notes, to-d
 - `ui_main.py` - Qt UI code
 
 ---
-
-Feel free to extend the app as needed!

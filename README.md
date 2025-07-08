@@ -19,5 +19,3 @@ This is a Python Qt-based standalone app for managing project-linked notes, to-d
 - `ui_main.py` - Qt UI code
 
 ---
-
-Feel free to extend the app as needed!

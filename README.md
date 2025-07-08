@@ -1,4 +1,4 @@
-# Checklist App
+# Checklist
 
 This is a Python Qt-based standalone app for managing project-linked notes, to-do lists, and task logs. It allows you to create, edit, and save checklists for different projects locally.
 

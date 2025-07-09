@@ -809,7 +809,7 @@ class ChecklistApp(QMainWindow):
                 self.task_list.resizeRowToContents(row)
                 # Save updated task file
                 project_id = self.current_project['id']
-                tasks_dir = os.path.join(os.path.dirname(__file__), 'tasks', project_id)
+                tasks_dir = os.path.join(self.get_base_path(), 'tasks', project_id)
                 fpath = os.path.join(tasks_dir, f"{task['id']}.json")
                 with open(fpath, 'w', encoding='utf-8') as f:
                     json.dump(task, f, indent=2, ensure_ascii=False)
@@ -875,9 +875,13 @@ class ChecklistApp(QMainWindow):
             }
             status_bg = status_bg_map.get(status, "#e53935")
             status_font = self.get_contrasting_font_color(status_bg)
-            status_combo.setStyleSheet(f"QComboBox {{ background-color: {status_bg}; color: {status_font}; }} QAbstractItemView {{ background-color: #fff; color: black; }}")
+            # Set popup color to match main color for instant feedback
+            status_combo.setStyleSheet(
+                f"QComboBox {{ background-color: {status_bg}; color: {status_font}; }} "
+                f"QComboBox QAbstractItemView {{ background-color: {status_bg}; color: {status_font}; }}"
+            )
 
-        # Force repaint
+        # Force repaint for instant color update
         self.task_list.viewport().update()
         self.task_list.repaint()
 

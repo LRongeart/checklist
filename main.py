@@ -40,6 +40,8 @@ except Exception as e:
     input("\nPress Enter to exit...")
     sys.exit(1)
 
+checklistAppVersion = "1.2.0"
+
 def cprint(*args, **kwargs):
     text = ' '.join(str(a) for a in args)
     # List of (pattern, color) tuples, multi-character patterns first
@@ -149,7 +151,7 @@ class ChecklistApp(QMainWindow):
             self.task_list.setRowCount(0)
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Checklist")
+        self.setWindowTitle("Checklist {}".format(checklistAppVersion))
         # Set window icon (top left)
         import os
         from PyQt5.QtGui import QIcon
